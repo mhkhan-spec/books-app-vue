@@ -1,0 +1,12 @@
+/* src/assets/main.css */
+@import "tailwindcss";
+@import './base.css';
+
+#app {
+  width: 100%;
+  margin: 0 auto;
+}
+
+body {
+  transition: color 0.3s, background-color 0.3s;
+}
