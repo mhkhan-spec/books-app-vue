@@ -21,9 +21,9 @@ const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes,
     // 3. Best Practice: Always scroll to top on navigation
-    scrollBehavior(to, from, savedPosition) {
-        return savedPosition || { top: 0 };
-    }
+    // scrollBehavior(to, from, savedPosition) {
+    //     return savedPosition || { top: 0 };
+    // }
 });
 
 // 4. Navigation Guard for Page Titles

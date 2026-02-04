@@ -1,0 +1,22 @@
+import axios from 'axios';
+import { BASE_URL } from '@/config';
+import type { Book, PaginatedResponse } from '@/types';
+
+export const listBooks = async (
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    category?: string,
+    signal?: AbortSignal
+): Promise<PaginatedResponse<Book>> => {
+    const params: Record<string, any> = {
+        page,
+        limit,
+    };
+
+    if (search) params.search = search;
+    if (category) params.category = category;
+
+    const response = await axios.get<PaginatedResponse<Book>>(`${BASE_URL}/books`, { params, signal });
+    return response.data;
+};
