@@ -7,6 +7,10 @@
   margin: 0 auto;
 }
 
+@theme {
+  --color-primary: #34d399; /* text-emerald-400 */
+}
+
 body {
   transition: color 0.3s, background-color 0.3s;
 }
