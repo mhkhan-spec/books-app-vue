@@ -20,3 +20,8 @@ export const listBooks = async (
     const response = await axios.get<PaginatedResponse<Book>>(`${BASE_URL}/books`, { params, signal });
     return response.data;
 };
+
+export const createBook = async (book: Omit<Book, 'id'>): Promise<Book> => {
+    const response = await axios.post<Book>(`${BASE_URL}/books`, book);
+    return response.data;
+};

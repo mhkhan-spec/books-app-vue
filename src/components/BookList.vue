@@ -4,11 +4,13 @@ import { useRoute } from 'vue-router';
 import { listBooks } from '@/services/books';
 import type { Book } from '@/types';
 import BookCard from './BookCard.vue';
+import BookDetailsModal from './BookDetailsModal.vue';
 import axios from 'axios';
 
 const route = useRoute();
 
 const books = ref<Book[]>([]);
+const selectedBook = ref<Book | null>(null); // State for selected book modal
 const isLoading = ref(false);
 const isLoadMoreLoading = ref(false); // New separate state for load more
 const error = ref<string | null>(null);
@@ -93,6 +95,14 @@ const loadMore = () => {
     fetchBooks(false);
 };
 
+const openBookDetails = (book: Book) => {
+    selectedBook.value = book;
+};
+
+const closeBookDetails = () => {
+    selectedBook.value = null;
+};
+
 // Initial Fetch
 onMounted(() => fetchBooks(true));
 
@@ -158,10 +168,12 @@ watch(
                 tag="div" 
                 class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10"
             >
+                <!-- Book Card with Click Handler -->
                 <BookCard 
                     v-for="book in books" 
                     :key="book.id" 
-                    :book="book" 
+                    :book="book"
+                    @click="openBookDetails(book)"
                 />
             </transition-group>
 
@@ -196,6 +208,13 @@ watch(
                 </button>
             </div>
         </div>
+
+        <!-- Details Modal -->
+        <BookDetailsModal 
+            v-if="selectedBook" 
+            :book="selectedBook" 
+            @close="closeBookDetails"
+        />
     </div>
 </template>
 

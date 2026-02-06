@@ -10,6 +10,18 @@ const routes: Array<RouteRecordRaw> = [
         meta: { title: 'Book Store - Home' }
     },
     {
+        path: '/create',
+        name: 'create-book',
+        component: () => import('@/views/CreateBookView.vue'),
+        meta: { title: 'Create New Book' }
+    },
+    {
+        path: '/cart',
+        name: 'cart',
+        component: () => import('@/views/CartView.vue'),
+        meta: { title: 'Shopping Cart' }
+    },
+    {
         // Catch-all 404 route
         path: '/:pathMatch(.*)*',
         name: 'not-found',
