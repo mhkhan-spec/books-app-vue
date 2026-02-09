@@ -7,7 +7,7 @@ export interface CartItem extends Book {
 
 const CART_STORAGE_KEY = 'book-store-cart';
 
-// Initialize state from local storage if available
+
 const savedCart = localStorage.getItem(CART_STORAGE_KEY);
 let initialState: CartItem[] = [];
 try {
@@ -21,7 +21,7 @@ const state = reactive({
     items: initialState
 });
 
-// Watch for changes and save to local storage
+
 watch(
     () => state.items,
     (items) => {
@@ -30,7 +30,7 @@ watch(
     { deep: true }
 );
 
-// Actions
+
 const addToCart = (book: Book) => {
     const existingItem = state.items.find((item) => item.id === book.id);
     if (existingItem) {
@@ -62,7 +62,7 @@ const clearCart = () => {
     state.items = [];
 };
 
-// Getters
+
 const totalItems = computed(() => {
     return state.items.reduce((total, item) => total + item.quantity, 0);
 });
@@ -70,7 +70,7 @@ const totalItems = computed(() => {
 const totalPrice = computed(() => {
     return state.items.reduce((total, item) => {
         if (!item.price) return total;
-        // Remove currency symbol if present and parse float
+
         const price = parseFloat(String(item.price).replace(/[^0-9.-]+/g, ""));
         return total + (isNaN(price) ? 0 : price) * item.quantity;
     }, 0).toFixed(2);

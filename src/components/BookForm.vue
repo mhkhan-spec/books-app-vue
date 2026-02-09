@@ -4,8 +4,7 @@ import { createBook } from '@/services/books';
 import type { Book } from '@/types';
 import { useRouter } from 'vue-router';
 
-// Defines if we should use window.reload on success or emit an event
-// For now, simpler to specificy behavior via props or just standard router push
+
 const props = defineProps<{
     onSuccess?: () => void;
 }>();
@@ -38,7 +37,7 @@ const handleSubmit = async () => {
         if (props.onSuccess) {
             props.onSuccess();
         } else {
-            // Default behavior if no prop: go home
+
             router.push('/');
         }
         resetForm();
@@ -54,7 +53,7 @@ const handleSubmit = async () => {
 <template>
     <form @submit.prevent="handleSubmit" class="h-full flex flex-col">
         <div class="flex gap-6">
-            <!-- Left Side: Image Preview -->
+
             <div class="w-32 flex-shrink-0 flex flex-col gap-2">
                  <div class="relative w-full aspect-[2/3] overflow-hidden rounded-lg bg-gray-100 shadow-sm border border-gray-200">
                     <img v-if="form.cover" :src="form.cover" alt="Cover preview" class="h-full w-full object-cover"
@@ -66,11 +65,10 @@ const handleSubmit = async () => {
                         <span>Preview</span>
                     </div>
                 </div>
-                 <!-- Image Link Input (Moved under preview for mobile-like vertical flow or keep it compact) -->
-                 <!-- Actually, let's keep inputs on the right/main area and just show preview here -->
+
             </div>
 
-            <!-- Right Side: Fields -->
+
             <div class="flex-1 space-y-3">
                  <div>
                     <label class="mb-1 block text-xs font-semibold text-gray-700">Image URL</label>

@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { useCart } from '@/composables/useCart';
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 
-const { totalItems } = useCart();
+const store = useStore();
+const totalItems = computed(() => store.getters.totalItems);
 </script>
 
 <template>

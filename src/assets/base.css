@@ -1,9 +1,9 @@
-/* src/assets/base.css */
+
 :root {
   --vt-c-white: #ffffff;
   --vt-c-black: #181818;
   
-  /* Use these for easy theme switching later */
+
   --color-background: var(--vt-c-white);
   --color-text: var(--vt-c-black);
 }

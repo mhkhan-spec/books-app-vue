@@ -1,4 +1,4 @@
-/* src/assets/main.css */
+
 @import "tailwindcss";
 @import './base.css';
 
@@ -8,7 +8,7 @@
 }
 
 @theme {
-  --color-primary: #34d399; /* text-emerald-400 */
+  --color-primary: #34d399;
 }
 
 body {

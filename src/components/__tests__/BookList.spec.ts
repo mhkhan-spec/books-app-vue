@@ -5,13 +5,12 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { listBooks } from '@/services/books';
 import type { Book, PaginatedResponse } from '@/types';
 
-// Mock the books service
+
 vi.mock('@/services/books', () => ({
     listBooks: vi.fn(),
 }));
 
-// Mock BookCard component since we don't need to test its internals here
-// and it simplifies shallow rendering isn't fully supported in setup syntax the same way
+
 vi.mock('../BookCard.vue', () => ({
     width: '100',
     height: '100',
@@ -20,7 +19,6 @@ vi.mock('../BookCard.vue', () => ({
     props: ['book']
 }));
 
-// Mock BookDetailsModal
 vi.mock('../BookDetailsModal.vue', () => ({
     name: 'BookDetailsModal',
     template: '<div class="book-details-modal-mock"></div>',
@@ -28,7 +26,6 @@ vi.mock('../BookDetailsModal.vue', () => ({
     emits: ['close']
 }));
 
-// Mock router
 const router = createRouter({
     history: createWebHistory(),
     routes: [
@@ -38,7 +35,7 @@ const router = createRouter({
 
 describe('BookList.vue', () => {
 
-    // Sample data
+
     const mockBooks: Book[] = [
         {
             id: '1',
@@ -72,12 +69,12 @@ describe('BookList.vue', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        // Default success response
+
         (listBooks as any).mockResolvedValue(mockResponse);
     });
 
     it('renders loading state initially', async () => {
-        // We defer resolution to test loading state
+
         let resolvePromise: (value: any) => void;
         const promise = new Promise((resolve) => { resolvePromise = resolve; });
         (listBooks as any).mockReturnValue(promise);
@@ -92,8 +89,7 @@ describe('BookList.vue', () => {
             }
         });
 
-        // Check if loading skeleton or indicator is present
-        // Looking at the code: isLoading && books.length === 0 shows the skeleton grid
+
         expect(wrapper.find('.animate-pulse').exists()).toBe(true);
 
         resolvePromise!(mockResponse);
@@ -107,13 +103,12 @@ describe('BookList.vue', () => {
             }
         });
 
-        // Wait for onMounted fetch
+
         await flushPromises();
 
         expect(listBooks).toHaveBeenCalledTimes(1);
 
-        // Check if two BookCard components are rendered (or their stubs)
-        // Since we mocked BookCard with class 'book-card-mock'
+
         const bookCards = wrapper.findAll('.book-card-mock');
         expect(bookCards.length).toBe(2);
     });
@@ -151,12 +146,12 @@ describe('BookList.vue', () => {
     });
 
     it('loads more books when load more button is clicked', async () => {
-        // First page response
+
         const page1Response = {
             data: [mockBooks[0]],
             pagination: { total: 2, page: 1, limit: 1, totalPages: 2 }
         };
-        // Second page response
+
         const page2Response = {
             data: [mockBooks[1]],
             pagination: { total: 2, page: 2, limit: 1, totalPages: 2 }
@@ -174,11 +169,10 @@ describe('BookList.vue', () => {
 
         await flushPromises();
 
-        // Should have 1 book now
+
         expect(wrapper.findAll('.book-card-mock').length).toBe(1);
 
-        // Find load more button
-        // Looking for text "Load More Books"
+
         const loadMoreBtn = wrapper.findAll('button').find(b => b.text().includes('Load More Books'));
         expect(loadMoreBtn?.exists()).toBe(true);
 
@@ -186,7 +180,7 @@ describe('BookList.vue', () => {
         await flushPromises();
 
         expect(listBooks).toHaveBeenCalledTimes(2);
-        // data should be appended
+
         expect(wrapper.findAll('.book-card-mock').length).toBe(2);
     });
 
@@ -199,10 +193,10 @@ describe('BookList.vue', () => {
 
         await flushPromises();
 
-        // Click first book
+
         await wrapper.find('.book-card-mock').trigger('click');
 
-        // Check if modal exists
+
         expect(wrapper.find('.book-details-modal-mock').exists()).toBe(true);
     });
 });

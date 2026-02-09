@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import type { Book } from '@/types';
-import { useCart } from '@/composables/useCart';
+import { useStore } from 'vuex';
 
 defineProps<{
     book: Book;
@@ -11,27 +11,27 @@ const emit = defineEmits<{
     (e: 'close'): void;
 }>();
 
-const { addToCart } = useCart();
+const store = useStore();
 
 const handleAddToCart = (book: Book) => {
-    addToCart(book);
+    store.dispatch('addToCart', book);
     emit('close');
-    // Optional: Add simple alert or toast here
+
 };
 
-// Prevent body scroll when modal is open (simple implementation)
+
 onMounted(() => document.body.style.overflow = 'hidden');
 onUnmounted(() => document.body.style.overflow = 'auto');
 </script>
 
 <template>
     <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true">
-        <!-- Backdrop -->
+
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="emit('close')"></div>
 
-        <!-- Modal Card -->
+
         <div class="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-gray-900/5 transition-all transform animate-in fade-in zoom-in-95 duration-200">
-            <!-- Close Button -->
+
             <button @click="emit('close')" class="absolute top-4 right-4 z-20 rounded-full bg-white/80 p-2 text-gray-500 hover:bg-white hover:text-gray-700 backdrop-blur-sm transition-colors">
                 <span class="sr-only">Close</span>
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -40,16 +40,16 @@ onUnmounted(() => document.body.style.overflow = 'auto');
             </button>
 
             <div class="flex flex-col md:flex-row h-full max-h-[85vh] md:max-h-[80vh]">
-                <!-- Image Section -->
+
                 <div class="relative w-full md:w-2/5 lg:w-1/3 bg-gray-100 flex items-center justify-center p-6 md:p-8">
                     <div class="relative aspect-[2/3] w-48 md:w-full shadow-2xl rounded-lg overflow-hidden transform transition-transform hover:scale-105 duration-500">
                         <img :src="book.cover" :alt="book.title" class="h-full w-full object-cover" />
-                         <!-- Gloss Effect -->
+
                          <div class="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent pointer-events-none"></div>
                     </div>
                 </div>
 
-                <!-- Info Section -->
+
                 <div class="flex-1 p-6 md:p-10 overflow-y-auto">
                     <div class="flex flex-col h-full">
                         <div class="mb-6">

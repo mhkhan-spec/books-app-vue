@@ -1,7 +1,15 @@
 <script setup lang="ts">
-import { useCart } from '@/composables/useCart';
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 
-const { cart, removeFromCart, updateQuantity, totalPrice, clearCart } = useCart();
+const store = useStore();
+
+const cartItems = computed(() => store.getters.cartItems);
+const totalPrice = computed(() => store.getters.totalPrice);
+
+const removeFromCart = (bookId: string) => store.dispatch('removeFromCart', bookId);
+const updateQuantity = (bookId: string, quantity: number) => store.dispatch('updateQuantity', { bookId, quantity });
+const clearCart = () => store.dispatch('clearCart');
 
 const increaseQuantity = (item: any) => {
     updateQuantity(item.id, item.quantity + 1);
@@ -17,7 +25,7 @@ const decreaseQuantity = (item: any) => {
         <div class="mx-auto max-w-4xl">
             <h1 class="text-3xl font-bold tracking-tight text-gray-900 mb-8">Shopping Cart</h1>
 
-            <div v-if="cart.items.length === 0" class="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100">
+            <div v-if="cartItems.length === 0" class="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100">
                 <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
@@ -31,10 +39,10 @@ const decreaseQuantity = (item: any) => {
             </div>
 
             <div v-else class="flex flex-col lg:flex-row gap-8">
-                <!-- Cart Items List -->
+
                 <div class="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <ul role="list" class="divide-y divide-gray-100">
-                        <li v-for="item in cart.items" :key="item.id" class="flex py-6 px-6 sm:px-8">
+                        <li v-for="item in cartItems" :key="item.id" class="flex py-6 px-6 sm:px-8">
                             <div class="h-24 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                                 <img :src="item.cover" :alt="item.title" class="h-full w-full object-cover object-center" />
                             </div>
@@ -61,7 +69,7 @@ const decreaseQuantity = (item: any) => {
                     </ul>
                 </div>
 
-                <!-- Order Summary -->
+
                 <div class="lg:w-80">
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
                         <h2 class="text-lg font-medium text-gray-900 mb-6">Order summary</h2>
@@ -70,7 +78,7 @@ const decreaseQuantity = (item: any) => {
                                 <dt class="text-sm text-gray-600">Subtotal</dt>
                                 <dd class="text-sm font-medium text-gray-900">${{ totalPrice }}</dd>
                             </div>
-                            <!-- Mock shipping/tax -->
+
                              <div class="flex items-center justify-between">
                                 <dt class="text-sm text-gray-600">Shipping</dt>
                                 <dd class="text-sm font-medium text-gray-900">Free</dd>

@@ -62,7 +62,7 @@ onMounted(fetchCategories);
 <template>
     <div class="py-6">
         <div class="grid grid-cols-12 gap-6 items-center">
-            <!-- Categories List -->
+
             <section class="col-span-8 overflow-x-auto scrollbar-hide">
                 <div v-if="error" class="flex items-center justify-start w-full">
                     <div class="text-sm text-red-500 bg-red-50 px-4 py-2 rounded-lg flex items-center space-x-2">
@@ -101,7 +101,7 @@ onMounted(fetchCategories);
                 </div>
             </section>
 
-            <!-- Search Bar -->
+
             <section class="col-span-4">
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
