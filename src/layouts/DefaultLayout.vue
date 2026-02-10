@@ -7,7 +7,7 @@ import CreateBookFab from '@/components/CreateBookFab.vue';
 <template>
     <div class="w-full min-h-screen">
         <Navbar />
-        <main class="grow container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <main class="grow container mx-auto p-2 lg:p-6">
             <slot />
         </main>
         <CreateBookFab />
