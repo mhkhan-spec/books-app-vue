@@ -5,6 +5,7 @@ import { listBooks } from '@/services/books';
 import type { Book } from '@/types';
 import BookCard from './BookCard.vue';
 import BookDetailsModal from './BookDetailsModal.vue';
+import LoadMore from './LoadMore.vue';
 import axios from 'axios';
 
 const route = useRoute();
@@ -20,6 +21,13 @@ const page = ref(Number(route.query.page) || 1);
 const hasMore = ref(true);
 const total = ref(0);
 const abortController = ref<AbortController | null>(null);
+
+// Feature flag for load more mode
+const loadMoreMode = ref<'button' | 'infinite'>('infinite');
+
+const toggleLoadMoreMode = () => {
+    loadMoreMode.value = loadMoreMode.value === 'button' ? 'infinite' : 'button';
+};
 
 const LIMIT = 3;
 
@@ -181,6 +189,8 @@ watch(
 
 <template>
     <div class="space-y-8 pb-12">
+        <!-- Feature Flag Toggle (Demo) -->
+
 
         <div v-if="isLoading && books.length === 0"
             class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-y-10 gap-x-6">
@@ -230,39 +240,8 @@ watch(
             </transition-group>
 
 
-            <div v-if="hasMore" class="flex flex-col items-center pt-12 space-y-4">
-
-                <div v-if="loadMoreError"
-                    class="flex items-center space-x-3 text-red-500 bg-red-50 px-4 py-2 rounded-lg text-sm mb-2">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{{ loadMoreError }}</span>
-                </div>
-
-                <button @click="loadMore" :disabled="isLoadMoreLoading"
-                    class="group relative px-8 py-3 bg-white text-gray-800 border-2 border-gray-100 font-semibold rounded-xl hover:border-primary hover:text-primary transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md min-w-[200px]">
-                    <span v-if="!isLoadMoreLoading" class="flex items-center justify-center space-x-2">
-                        <span>Load More Books</span>
-                        <svg class="w-4 h-4 transform group-hover:translate-y-1 transition-transform" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </span>
-                    <span v-else class="flex items-center justify-center space-x-2">
-                        <svg class="animate-spin h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                            </circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                        <span>Loading...</span>
-                    </span>
-                </button>
-            </div>
+            <LoadMore :has-more="hasMore" :is-loading="isLoadMoreLoading" :error="loadMoreError" :mode="loadMoreMode"
+                @load="loadMore" />
         </div>
 
 
