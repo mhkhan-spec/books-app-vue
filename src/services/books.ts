@@ -25,3 +25,13 @@ export const createBook = async (book: Omit<Book, 'id'>): Promise<Book> => {
     const response = await axios.post<Book>(`${BASE_URL}/books`, book);
     return response.data;
 };
+
+export const decrementStock = async (bookId: number): Promise<Book> => {
+    const response = await axios.post<Book>(`${BASE_URL}/books/${bookId}/decrement-stock`);
+    return response.data;
+};
+
+export const incrementStock = async (bookId: number, amount: number = 1): Promise<Book> => {
+    const response = await axios.post<Book>(`${BASE_URL}/books/${bookId}/increment-stock`, { amount });
+    return response.data;
+};

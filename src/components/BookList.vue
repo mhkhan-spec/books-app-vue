@@ -22,12 +22,7 @@ const hasMore = ref(true);
 const total = ref(0);
 const abortController = ref<AbortController | null>(null);
 
-// Feature flag for load more mode
 const loadMoreMode = ref<'button' | 'infinite'>('infinite');
-
-const toggleLoadMoreMode = () => {
-    loadMoreMode.value = loadMoreMode.value === 'button' ? 'infinite' : 'button';
-};
 
 const LIMIT = 3;
 
@@ -142,6 +137,16 @@ const closeBookDetails = () => {
     selectedBook.value = null;
 };
 
+const updateBookInList = (updatedBook: Book) => {
+    const index = books.value.findIndex(b => Number(b.id) === Number(updatedBook.id));
+    if (index !== -1) {
+        books.value[index] = { ...updatedBook };
+        if (selectedBook.value && Number(selectedBook.value.id) === Number(updatedBook.id)) {
+            selectedBook.value = { ...updatedBook };
+        }
+    }
+};
+
 
 onMounted(() => fetchBooks(false));
 
@@ -161,7 +166,6 @@ watch(
 
         const newPage = Number(newPageQuery) || 1;
 
-        // Reset if category or search changed
         if (newCat !== oldCat || newSearch !== oldSearch) {
             page.value = 1;
             if (newPage !== 1) {
@@ -174,9 +178,7 @@ watch(
             return;
         }
 
-        // Handle page change
         if (newPage !== page.value) {
-            // Only use append mode if it's the next sequential page and we have books
             const isNextPage = newPage === page.value + 1;
             const isAppend = isNextPage && books.value.length > 0;
 
@@ -189,7 +191,6 @@ watch(
 
 <template>
     <div class="space-y-8 pb-12">
-        <!-- Feature Flag Toggle (Demo) -->
 
 
         <div v-if="isLoading && books.length === 0"
@@ -245,7 +246,8 @@ watch(
         </div>
 
 
-        <BookDetailsModal v-if="selectedBook" :book="selectedBook" @close="closeBookDetails" />
+        <BookDetailsModal v-if="selectedBook" :book="selectedBook" @close="closeBookDetails"
+            @book-updated="updateBookInList" />
     </div>
 </template>
 

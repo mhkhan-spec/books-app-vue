@@ -1,22 +1,58 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useStore } from 'vuex';
 
 const store = useStore();
+const isUpdating = ref(false);
 
 const cartItems = computed(() => store.getters.cartItems);
 const totalPrice = computed(() => store.getters.totalPrice);
 
-const removeFromCart = (bookId: string) => store.dispatch('removeFromCart', bookId);
-const updateQuantity = (bookId: string, quantity: number) => store.dispatch('updateQuantity', { bookId, quantity });
-const clearCart = () => store.dispatch('clearCart');
+const removeFromCart = async (bookId: number) => {
+    if (isUpdating.value) return;
+    isUpdating.value = true;
+    try {
+        await store.dispatch('removeFromCart', bookId);
+    } finally {
+        isUpdating.value = false;
+    }
+};
+
+const updateQuantity = async (bookId: number, quantity: number) => {
+    if (isUpdating.value) return;
+    isUpdating.value = true;
+    try {
+        await store.dispatch('updateQuantity', { bookId, quantity });
+    } finally {
+        isUpdating.value = false;
+    }
+};
+
+const clearCart = async () => {
+    if (isUpdating.value) return;
+    isUpdating.value = true;
+    try {
+        await store.dispatch('clearCart');
+    } finally {
+        isUpdating.value = false;
+    }
+};
 
 const increaseQuantity = (item: any) => {
-    updateQuantity(item.id, item.quantity + 1);
+    const currentStock = store.getters.getBookStock(Number(item.id)) ?? item.stock;
+    if (currentStock > 0) {
+        updateQuantity(item.id, item.quantity + 1);
+    } else {
+        alert('Sorry, no more stock available for this book.');
+    }
 };
 
 const decreaseQuantity = (item: any) => {
     updateQuantity(item.id, item.quantity - 1);
+};
+
+const getStock = (item: any) => {
+    return store.getters.getBookStock(Number(item.id)) ?? item.stock;
 };
 </script>
 
@@ -55,14 +91,19 @@ const decreaseQuantity = (item: any) => {
                                     </div>
                                     <p class="mt-1 text-sm text-gray-500">{{ item.author }}</p>
                                 </div>
-                                <div class="flex flex-1 items-end justify-between text-sm">
-                                    <div class="flex items-center rounded-lg border border-gray-200">
-                                        <button @click="decreaseQuantity(item)" class="px-3 py-1 hover:bg-gray-50 text-gray-600 font-medium rounded-l-lg disabled:opacity-50" :disabled="item.quantity <= 1">-</button>
-                                        <span class="px-2 py-1 text-gray-900 font-medium min-w-[30px] text-center">{{ item.quantity }}</span>
-                                        <button @click="increaseQuantity(item)" class="px-3 py-1 hover:bg-gray-50 text-gray-600 font-medium rounded-r-lg">+</button>
+                                    <div class="flex flex-1 items-end justify-between text-sm">
+                                    <div class="flex flex-col gap-2">
+                                        <div class="flex items-center rounded-lg border border-gray-200">
+                                            <button @click="decreaseQuantity(item)" class="px-3 py-1 hover:bg-gray-50 text-gray-600 font-medium rounded-l-lg disabled:opacity-50" :disabled="item.quantity <= 1 || isUpdating">-</button>
+                                            <span class="px-2 py-1 text-gray-900 font-medium min-w-[30px] text-center">{{ item.quantity }}</span>
+                                            <button @click="increaseQuantity(item)" class="px-3 py-1 hover:bg-gray-50 text-gray-600 font-medium rounded-r-lg disabled:opacity-50" :disabled="getStock(item) <= 0 || isUpdating">+</button>
+                                        </div>
+                                        <p class="text-[10px]" :class="getStock(item) > 0 ? 'text-gray-500' : 'text-red-500 font-bold'">
+                                            {{ getStock(item) > 0 ? `Stock: ${getStock(item)}` : 'Out of Stock' }}
+                                        </p>
                                     </div>
 
-                                    <button @click="removeFromCart(item.id)" type="button" class="font-medium text-red-500 hover:text-red-600 transition-colors">Remove</button>
+                                    <button @click="removeFromCart(item.id)" type="button" class="font-medium text-red-500 hover:text-red-600 transition-colors disabled:opacity-50" :disabled="isUpdating">Remove</button>
                                 </div>
                             </div>
                         </li>
@@ -90,7 +131,7 @@ const decreaseQuantity = (item: any) => {
                         </dl>
 
                         <div class="mt-8 space-y-3">
-                            <button @click="clearCart" class="w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm hover:bg-emerald-700 transition-all hover:-translate-y-0.5 active:translate-y-0">
+                            <button @click="clearCart" :disabled="isUpdating" class="w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm hover:bg-emerald-700 transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0">
                                 Checkout
                             </button>
                              <router-link to="/" class="block text-center w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm hover:bg-gray-50 transition-all">

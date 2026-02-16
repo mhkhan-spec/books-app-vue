@@ -1,22 +1,40 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, computed, ref } from 'vue';
 import type { Book } from '@/types';
 import { useStore } from 'vuex';
 
-defineProps<{
+const props = defineProps<{
     book: Book;
 }>();
 
 const emit = defineEmits<{
     (e: 'close'): void;
+    (e: 'book-updated', book: Book): void;
 }>();
 
 const store = useStore();
 
-const handleAddToCart = (book: Book) => {
-    store.dispatch('addToCart', book);
-    emit('close');
+const localStock = computed(() => {
+    const storeStock = store.getters.getBookStock(Number(props.book.id));
+    return storeStock !== undefined ? storeStock : props.book.stock;
+});
 
+const isAdding = ref(false);
+
+const handleAddToCart = async (book: Book) => {
+    if (isAdding.value) return;
+    isAdding.value = true;
+    try {
+        const updatedBook = await store.dispatch('addToCart', book);
+        if (updatedBook) {
+            emit('book-updated', updatedBook);
+        }
+        emit('close');
+    } catch (error) {
+        console.error('Failed to add to cart:', error);
+    } finally {
+        isAdding.value = false;
+    }
 };
 
 
@@ -56,23 +74,37 @@ onUnmounted(() => document.body.style.overflow = 'auto');
                             <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/10 mb-3">
                                 {{ book.category }}
                             </span>
-                            <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-2">{{ book.title }}</h2>
+                             <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-2">{{ book.title }}</h2>
                             <p class="text-lg font-medium text-emerald-600">{{ book.author }}</p>
+                            <div class="mt-2 text-sm" :class="localStock > 0 ? 'text-gray-500' : 'text-red-500 font-bold'">
+                                {{ localStock > 0 ? `Stock: ${localStock}` : 'Out of Stock' }}
+                            </div>
                         </div>
 
                         <div class="prose prose-sm text-gray-600 mb-8 flex-grow">
-                            <p class="whitespace-pre-line leading-relaxed">{{ book.description }}</p>
+                            <p class="whitespace-pre-line leading-relaxed">{{ props.book.description }}</p>
                         </div>
 
                          <div class="mt-auto border-t border-gray-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                             <div class="text-3xl font-bold text-gray-900">
-                                ${{ book.price }}
+                                ${{ props.book.price }}
                             </div>
-                            <button 
-                                @click="handleAddToCart(book)"
-                                class="w-full sm:w-auto rounded-xl bg-emerald-600 px-8 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                             <button 
+                                @click="handleAddToCart(props.book)"
+                                :disabled="localStock <= 0 || isAdding"
+                                class="w-full sm:w-auto rounded-xl px-8 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center justify-center min-w-[140px]"
+                                :class="localStock > 0 ? 'bg-emerald-600 hover:bg-emerald-500 focus-visible:outline-emerald-600' : 'bg-gray-400'"
                             >
-                                Add to Cart
+                                <span v-if="isAdding" class="flex items-center gap-2">
+                                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Adding...
+                                </span>
+                                <span v-else>
+                                    {{ localStock > 0 ? 'Add to Cart' : 'Out of Stock' }}
+                                </span>
                             </button>
                         </div>
                     </div>

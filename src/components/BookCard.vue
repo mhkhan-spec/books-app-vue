@@ -1,15 +1,25 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 import type { Book } from '@/types';
 
-defineProps<{
+const props = defineProps<{
     book: Book;
 }>();
+
+const store = useStore();
+const localStock = computed(() => {
+    const storeStock = store.getters.getBookStock(Number(props.book.id));
+    return storeStock !== undefined ? storeStock : props.book.stock;
+});
 </script>
 
 <template>
     <div class="perspective-container group cursor-pointer relative z-0">
 
-        <div class="absolute top-1 bottom-1 left-2 w-[96%] bg-white rounded-r-md z-0 shadow-sm border-r-4 border-gray-200 transition-all duration-500 transform group-hover:rotate-y-[-2deg] group-hover:translate-x-1 books-page-pattern"></div>
+        <div
+            class="absolute top-1 bottom-1 left-2 w-[96%] bg-white rounded-r-md z-0 shadow-sm border-r-4 border-gray-200 transition-all duration-500 transform group-hover:rotate-y-[-2deg] group-hover:translate-x-1 books-page-pattern">
+        </div>
 
 
         <div
@@ -17,6 +27,11 @@ defineProps<{
 
             <div class="aspect-2/3 w-full relative">
                 <img :src="book.cover" :alt="book.title" class="w-full h-full object-cover" loading="lazy" />
+
+                <div class="absolute top-2 right-2 px-2 py-1 rounded-md text-[10px] font-bold z-20 shadow-sm backdrop-blur-md"
+                    :class="localStock > 0 ? 'bg-white/90 text-gray-800' : 'bg-red-500/90 text-white'">
+                    {{ localStock > 0 ? `Stock: ${localStock}` : 'Out of Stock' }}
+                </div>
 
 
                 <div class="book-spine"></div>
@@ -61,13 +76,11 @@ defineProps<{
 }
 
 .books-page-pattern {
-    background-image: repeating-linear-gradient(
-        to bottom,
-        #fff 0px,
-        #fff 2px,
-        #f3f4f6 2px,
-        #f3f4f6 3px
-    );
+    background-image: repeating-linear-gradient(to bottom,
+            #fff 0px,
+            #fff 2px,
+            #f3f4f6 2px,
+            #f3f4f6 3px);
 }
 
 

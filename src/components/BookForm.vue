@@ -18,7 +18,8 @@ const form = reactive<Omit<Book, 'id'>>({
     price: '',
     category: '',
     cover: '',
-    description: ''
+    description: '',
+    stock: 0
 });
 
 const resetForm = () => {
@@ -28,6 +29,7 @@ const resetForm = () => {
     form.category = '';
     form.cover = '';
     form.description = '';
+    form.stock = 0;
 };
 
 const handleSubmit = async () => {
@@ -98,6 +100,14 @@ const handleSubmit = async () => {
                                 class="w-full rounded-lg border border-gray-200 bg-gray-50/50 pl-6 pr-3 py-2 text-sm outline-none ring-offset-1 transition-all focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20" />
                         </div>
                     </div>
+                    <div>
+                        <label class="mb-1 block text-xs font-semibold text-gray-700">Stock</label>
+                        <input v-model.number="form.stock" type="number" placeholder="0" min="0" required
+                            class="w-full rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2 text-sm outline-none ring-offset-1 transition-all focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500/20" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="mb-1 block text-xs font-semibold text-gray-700">Category</label>
                         <div class="relative">

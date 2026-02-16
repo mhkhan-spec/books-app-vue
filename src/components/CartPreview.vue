@@ -1,18 +1,44 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useStore } from 'vuex';
 
 const store = useStore();
+const isUpdating = ref(false);
 
 const cartItems = computed(() => store.getters.cartItems);
 const totalPrice = computed(() => store.getters.totalPrice);
 
-const updateQuantity = (bookId: string, quantity: number) => {
-    store.dispatch('updateQuantity', { bookId, quantity });
+const getStock = (item: any) => {
+    return store.getters.getBookStock(Number(item.id)) ?? item.stock;
 };
 
-const removeFromCart = (bookId: string) => {
-    store.dispatch('removeFromCart', bookId);
+const updateQuantity = async (bookId: number, quantity: number) => {
+    if (isUpdating.value) return;
+    isUpdating.value = true;
+    try {
+        await store.dispatch('updateQuantity', { bookId, quantity });
+    } finally {
+        isUpdating.value = false;
+    }
+};
+
+const increaseQuantity = async (item: any) => {
+    const currentStock = getStock(item);
+    if (currentStock > 0) {
+        await updateQuantity(item.id, item.quantity + 1);
+    } else {
+        alert('No more stock available.');
+    }
+};
+
+const removeFromCart = async (bookId: number) => {
+    if (isUpdating.value) return;
+    isUpdating.value = true;
+    try {
+        await store.dispatch('removeFromCart', bookId);
+    } finally {
+        isUpdating.value = false;
+    }
 };
 </script>
 
@@ -46,7 +72,8 @@ const removeFromCart = (bookId: string) => {
                                     {{ item.title }}
                                 </h4>
                                 <button @click="removeFromCart(item.id)"
-                                    class="text-gray-400 hover:text-red-500 transition-colors p-0.5 -mt-0.5">
+                                    class="text-gray-400 hover:text-red-500 transition-colors p-0.5 -mt-0.5 disabled:opacity-50"
+                                    :disabled="isUpdating">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -61,7 +88,7 @@ const removeFromCart = (bookId: string) => {
                                 class="flex items-center gap-2 bg-gray-50 px-1.5 py-0.5 rounded-md border border-gray-100">
                                 <button @click="updateQuantity(item.id, item.quantity - 1)"
                                     class="text-gray-400 hover:text-emerald-600 disabled:opacity-30 p-0.5"
-                                    :disabled="item.quantity <= 1">
+                                    :disabled="item.quantity <= 1 || isUpdating">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="3" stroke="currentColor" class="w-2.5 h-2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" />
@@ -69,8 +96,9 @@ const removeFromCart = (bookId: string) => {
                                 </button>
                                 <span class="text-[10px] font-bold text-gray-700 w-3 text-center">{{ item.quantity
                                 }}</span>
-                                <button @click="updateQuantity(item.id, item.quantity + 1)"
-                                    class="text-gray-400 hover:text-emerald-600 p-0.5">
+                                <button @click="increaseQuantity(item)"
+                                    class="text-gray-400 hover:text-emerald-600 disabled:opacity-30 p-0.5"
+                                    :disabled="getStock(item) <= 0 || isUpdating">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="3" stroke="currentColor" class="w-2.5 h-2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round"

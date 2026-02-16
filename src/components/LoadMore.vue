@@ -77,7 +77,6 @@ const handleButtonClick = () => {
 
 <template>
     <div class="load-more-container py-12 flex flex-col items-center space-y-4">
-        <!-- Error Message -->
         <div v-if="error"
             class="flex items-center space-x-3 text-red-500 bg-red-50 px-4 py-2 rounded-lg text-sm mb-2 animate-bounce-subtle">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -87,7 +86,6 @@ const handleButtonClick = () => {
             <span>{{ error }}</span>
         </div>
 
-        <!-- Button Mode -->
         <template v-if="mode === 'button'">
             <button v-if="hasMore" @click="handleButtonClick" :disabled="isLoading"
                 class="group relative px-8 py-3 bg-white text-gray-800 border-2 border-gray-100 font-semibold rounded-xl hover:border-primary hover:text-primary transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md min-w-[200px] overflow-hidden">
@@ -119,7 +117,6 @@ const handleButtonClick = () => {
             </div>
         </template>
 
-        <!-- Infinite Scroll Mode -->
         <template v-else>
             <div ref="observerTarget" class="h-10 w-full flex items-center justify-center">
                 <div v-if="isLoading" class="flex items-center space-x-2 text-gray-500">

@@ -1,11 +1,12 @@
 export interface Book {
-    id: string;
+    id: number;
     title: string;
     author: string;
     description: string;
     cover: string;
     price: string;
     category: string;
+    stock: number;
 }
 
 export interface PaginatedResponse<T> {
