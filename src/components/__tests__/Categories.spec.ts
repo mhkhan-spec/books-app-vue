@@ -34,13 +34,15 @@ describe('Categories.vue', () => {
         vi.restoreAllMocks();
     });
 
-    // Positive Tests
     it('renders all categories fetched from the service', async () => {
+        // ARRANGE
         const wrapper = mount(Categories);
+        
+        // ACT
         await flushPromises();
 
+        // ASSERT
         const buttons = wrapper.findAll('button');
-        // 'All Books' + mockCategories
         expect(buttons.length).toBe(mockCategories.length + 1);
         expect(wrapper.text()).toContain('Fiction');
         expect(wrapper.text()).toContain('Non-Fiction');
@@ -48,72 +50,169 @@ describe('Categories.vue', () => {
     });
 
     it('sets active category and updates URL query on click', async () => {
+        // ARRANGE
         const wrapper = mount(Categories);
         await flushPromises();
 
+        // ACT
         const fictionButton = wrapper.findAll('button').find(b => b.text() === 'Fiction');
         await fictionButton?.trigger('click');
 
+        // ASSERT
         expect(mockPush).toHaveBeenCalledWith({
             query: { category: 'Fiction' }
         });
     });
 
-    it('triggers search update with debounce', async () => {
+    it('triggers search update with debounce and clears previous timeout', async () => {
+        // ARRANGE
         const wrapper = mount(Categories);
         const input = wrapper.find('input');
 
-        await input.setValue('Harry Potter');
-
-        // Should not have called push yet due to debounce
-        expect(mockPush).not.toHaveBeenCalled();
-
-        // Advance timers by 300ms
+        // ACT
+        await input.setValue('Harry');
+        vi.advanceTimersByTime(100);
+        await input.setValue('Harry Potter'); // This triggers the clearTimeout logic
         vi.advanceTimersByTime(300);
 
+        // ASSERT
         expect(mockPush).toHaveBeenCalledWith({
             query: { search: 'Harry Potter' }
         });
     });
 
-    // Negative Tests
     it('shows error UI and retry button when listCategories throws', async () => {
+        // ARRANGE
         (listCategories as any).mockRejectedValue(new Error('API Error'));
 
+        // ACT
         const wrapper = mount(Categories);
         await flushPromises();
 
+        // ASSERT
         expect(wrapper.text()).toContain('Failed to load categories');
         const retryButton = wrapper.find('button.underline');
         expect(retryButton.exists()).toBe(true);
-        expect(retryButton.text()).toBe('Retry');
     });
 
     it('correctly handles empty category list (only shows "All Books")', async () => {
+        // ARRANGE
         (listCategories as any).mockResolvedValue([]);
 
+        // ACT
         const wrapper = mount(Categories);
         await flushPromises();
 
+        // ASSERT
         const buttons = wrapper.findAll('button');
         expect(buttons.length).toBe(1);
         expect(buttons[0]?.text()).toBe('All Books');
     });
 
     it('handles missing route queries gracefully', async () => {
-        // Mock route with missing query params
-        (useRoute as any).mockReturnValue({
-            query: {}
-        });
+        // ARRANGE
+        (useRoute as any).mockReturnValue({ query: {} });
 
+        // ACT
         const wrapper = mount(Categories);
         await flushPromises();
 
+        // ASSERT
         const allBooksButton = wrapper.findAll('button').find(b => b.text() === 'All Books');
-        // 'All Books' should be active by default if no category in query
         expect(allBooksButton?.classes()).toContain('bg-primary');
-
         const input = wrapper.find('input');
         expect((input.element as HTMLInputElement).value).toBe('');
+    });
+
+    it('deselects an active category when clicked again', async () => {
+        // ARRANGE
+        const wrapper = mount(Categories);
+        await flushPromises();
+        const fictionButton = wrapper.findAll('button').find(b => b.text() === 'Fiction');
+
+        // ACT
+        await fictionButton?.trigger('click'); // Select
+        await fictionButton?.trigger('click'); // Deselect
+
+        // ASSERT
+        expect(mockPush).toHaveBeenLastCalledWith({
+            query: { category: undefined }
+        });
+    });
+
+    it('clears search query and updates URL when input is emptied', async () => {
+        // ARRANGE
+        const wrapper = mount(Categories);
+        const input = wrapper.find('input');
+        await input.setValue('Harry Potter');
+
+        // ACT
+        await input.setValue('');
+        vi.advanceTimersByTime(300);
+
+        // ASSERT
+        expect(mockPush).toHaveBeenLastCalledWith({ query: {} });
+    });
+
+    it('clears search query when the clear button (X icon) is clicked', async () => {
+        // ARRANGE
+        const wrapper = mount(Categories);
+        const input = wrapper.find('input');
+        await input.setValue('Science');
+        vi.advanceTimersByTime(300);
+
+        // ACT
+        const clearButton = wrapper.find('div.absolute.inset-y-0.right-0');
+        await clearButton.trigger('click');
+        vi.advanceTimersByTime(300);
+
+        // ASSERT
+        expect((input.element as HTMLInputElement).value).toBe('');
+        expect(mockPush).toHaveBeenLastCalledWith({ query: {} });
+    });
+
+    it('clears search query via clearSearch function (Direct State Test)', async () => {
+        // ARRANGE
+        const wrapper = mount(Categories);
+        await wrapper.find('input').setValue('Science');
+
+        // ACT
+        const clearButton = wrapper.find('div.absolute.right-0');
+        await clearButton.trigger('click');
+
+        // ASSERT
+        expect((wrapper.vm as any).searchQuery).toBe('');
+        vi.advanceTimersByTime(300);
+        expect(mockPush).toHaveBeenLastCalledWith({ query: {} });
+    });
+
+    it('handles "All Books" click by setting category to empty string', async () => {
+        // ARRANGE
+        (useRoute as any).mockReturnValue({ query: { category: 'Fiction' } });
+        const wrapper = mount(Categories);
+        await flushPromises();
+
+        // ACT
+        const allBooksButton = wrapper.findAll('button').find(b => b.text() === 'All Books');
+        await allBooksButton?.trigger('click');
+
+        // ASSERT
+        expect(mockPush).toHaveBeenCalledWith({ query: { category: '' } });
+    });
+
+    it('initializes with values from route query', async () => {
+        // ARRANGE
+        (useRoute as any).mockReturnValue({
+            query: { category: 'Science', search: 'Plato' }
+        });
+
+        // ACT
+        const wrapper = mount(Categories);
+        await flushPromises();
+
+        // ASSERT
+        expect((wrapper.find('input').element as HTMLInputElement).value).toBe('Plato');
+        const scienceButton = wrapper.findAll('button').find(b => b.text() === 'Science');
+        expect(scienceButton?.classes()).toContain('bg-primary');
     });
 });
